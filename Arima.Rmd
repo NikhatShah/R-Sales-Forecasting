@@ -1,0 +1,59 @@
+---
+title: "Arima Sales Forecasting"
+---
+```{r}
+#Download neccessary packages
+library(fable)
+library(lubridate)
+library(forecast)
+library(tsibble)
+library(tidyverse)
+library(timeSeries)
+```
+```{r}
+#Read dataset from excel file
+sales<-readr::read_csv("Insert file path"")
+```
+
+```{r}
+#Fit data into dataframe and Arima Model with sales as the response variable and date as the predictor variable
+set.seed(1)
+d_tsibble <- data.frame(
+     date = seq(as.Date("2021-01-01"), by = "day", length.out = 1095),
+     revenue = sales$Sales
+ ) %>%
+    as_tsibble(index = date)
+fit <- d_tsibble %>%
+    model(
+        arima = ARIMA(revenue)
+     )
+report(fit)
+```
+```{r}
+fit
+```
+```{r}
+#Set pdq variables
+fit_manual <- d_tsibble %>%
+     model(
+         arima = ARIMA(revenue ~ pdq(2,1,2) + PDQ(1,1,1))
+  )
+```
+```{r}
+report(fit_manual)
+```
+```{r}
+#Forecast for the next 121 days
+forecast_manual <- fit_manual %>%
+     forecast(h = "121 days")
+
+```
+
+```{r}
+#Save file as csv labelled "Arima Forecast"
+write.csv(forecast_manual, "Arima_forecast")
+```
+
+
+```
+
